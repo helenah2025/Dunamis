@@ -200,10 +200,10 @@ class DatabaseManager:
         )
         return [row[0] for row in self.cursor.fetchall()]
     
-    def get_enabled_modules(self, network_id: int) -> List[str]:
-        """Get enabled modules for a network"""
+    def get_enabled_plugins(self, network_id: int) -> List[str]:
+        """Get enabled plugins for a network"""
         self.cursor.execute(
-            'SELECT moduleName FROM modules WHERE networkID=? AND moduleEnabled=1',
+            'SELECT pluginName FROM plugins WHERE networkID=? AND pluginEnabled=1',
             (network_id,)
         )
         return [row[0] for row in self.cursor.fetchall()]
@@ -229,83 +229,83 @@ class DatabaseManager:
         self.connection.commit()
         Logger.info(f"Removed channel {channel_name} from database")
     
-    def update_module_status(self, network_id: int, module_name: str, enabled: bool):
-        """Enable or disable a module"""
+    def update_plugin_status(self, network_id: int, plugin_name: str, enabled: bool):
+        """Enable or disable a plugin"""
         self.cursor.execute(
-            'UPDATE modules SET moduleEnabled=? WHERE networkID=? AND moduleName=?',
-            (1 if enabled else 0, network_id, module_name)
+            'UPDATE plugins SET pluginEnabled=? WHERE networkID=? AND pluginName=?',
+            (1 if enabled else 0, network_id, plugin_name)
         )
         self.connection.commit()
 
 
 # ============================================================================
-# Module System
+# Plugin System
 # ============================================================================
 
-class ModuleManager:
-    """Manage bot modules and their commands/variables"""
+class PluginManager:
+    """Manage bot plugins and their commands/variables"""
     
-    def __init__(self, modules_dir: Path = Path("modules")):
-        self.modules_dir = modules_dir
-        self.loaded_modules: dict[str, Any] = {}
+    def __init__(self, plugins_dir: Path = Path("plugins")):
+        self.plugins_dir = plugins_dir
+        self.loaded_plugins: dict[str, Any] = {}
         self.commands: dict[str, Callable] = {}
         self.variables: dict[str, Callable] = {}
     
-    def load_module(self, module_name: str) -> bool:
-        """Load a module and register its commands/variables"""
-        if module_name in self.loaded_modules:
-            Logger.warning(f"Module {module_name} already loaded")
+    def load_plugin(self, plugin_name: str) -> bool:
+        """Load a plugin and register its commands/variables"""
+        if plugin_name in self.loaded_plugins:
+            Logger.warning(f"Plugin {plugin_name} already loaded")
             return False
         
-        init_path = self.modules_dir / module_name / "init.py"
+        init_path = self.plugins_dir / plugin_name / "init.py"
         
         if not init_path.exists():
-            Logger.error(f"Module {module_name} not found at {init_path}")
+            Logger.error(f"Plugin {plugin_name} not found at {init_path}")
             return False
         
         try:
-            spec = spec_from_file_location(module_name, init_path)
-            module = module_from_spec(spec)
-            spec.loader.exec_module(module)
+            spec = spec_from_file_location(plugin_name, init_path)
+            plugin = module_from_spec(spec)
+            spec.loader.exec_module(plugin)
             
-            self.loaded_modules[module_name] = module
-            self._register_module_features(module_name, module)
+            self.loaded_plugins[plugin_name] = plugin
+            self._register_plugin_features(plugin_name, plugin)
             
-            Logger.info(f"Module {module_name} loaded successfully")
+            Logger.info(f"Plugin {plugin_name} loaded successfully")
             return True
         except Exception as e:
-            Logger.error(f"Failed to load module {module_name}: {e}")
+            Logger.error(f"Failed to load plugin {plugin_name}: {e}")
             return False
     
-    def unload_module(self, module_name: str) -> bool:
-        """Unload a module and unregister its features"""
-        if module_name not in self.loaded_modules:
-            Logger.warning(f"Module {module_name} not loaded")
+    def unload_plugin(self, plugin_name: str) -> bool:
+        """Unload a plugin and unregister its features"""
+        if plugin_name not in self.loaded_plugins:
+            Logger.warning(f"Plugin {plugin_name} not loaded")
             return False
         
-        module = self.loaded_modules[module_name]
-        self._unregister_module_features(module)
-        del self.loaded_modules[module_name]
+        plugin = self.loaded_plugins[plugin_name]
+        self._unregister_plugin_features(plugin)
+        del self.loaded_plugins[plugin_name]
         
-        Logger.info(f"Module {module_name} unloaded")
+        Logger.info(f"Plugin {plugin_name} unloaded")
         return True
     
-    def _register_module_features(self, module_name: str, module: Any):
-        """Register commands and variables from a module"""
-        for attr_name in dir(module):
+    def _register_plugin_features(self, plugin_name: str, plugin: Any):
+        """Register commands and variables from a plugin"""
+        for attr_name in dir(plugin):
             if attr_name.startswith("command_"):
                 cmd_name = attr_name.replace("command_", "")
-                self.commands[cmd_name] = getattr(module, attr_name)
+                self.commands[cmd_name] = getattr(plugin, attr_name)
                 Logger.info(f"Registered command: {cmd_name}")
             
             elif attr_name.startswith("variable_"):
                 var_name = attr_name.replace("variable_", "")
-                self.variables[var_name] = getattr(module, attr_name)
+                self.variables[var_name] = getattr(plugin, attr_name)
                 Logger.info(f"Registered variable: {var_name}")
     
-    def _unregister_module_features(self, module: Any):
-        """Unregister commands and variables from a module"""
-        for attr_name in dir(module):
+    def _unregister_plugin_features(self, plugin: Any):
+        """Unregister commands and variables from a plugin"""
+        for attr_name in dir(plugin):
             if attr_name.startswith("command_"):
                 cmd_name = attr_name.replace("command_", "")
                 self.commands.pop(cmd_name, None)
@@ -344,7 +344,7 @@ class ServiceXProtocol(irc.IRCClient):
     
     def __init__(self):
         super().__init__()
-        self.module_manager = ModuleManager()
+        self.plugin_manager = PluginManager()
         self.db: Optional[DatabaseManager] = None
         self.joined_channels: List[str] = []
     
@@ -356,10 +356,10 @@ class ServiceXProtocol(irc.IRCClient):
             f"({self.factory.config.address}:{self.factory.config.port})"
         )
         
-        # Load enabled modules
-        enabled_modules = self.db.get_enabled_modules(self.factory.config.id)
-        for module_name in enabled_modules:
-            self.module_manager.load_module(module_name)
+        # Load enabled plugins
+        enabled_plugins = self.db.get_enabled_plugins(self.factory.config.id)
+        for plugin_name in enabled_plugins:
+            self.plugin_manager.load_plugin(plugin_name)
     
     def connectionLost(self, reason):
         """Handle lost connection"""
@@ -496,7 +496,7 @@ class ServiceXProtocol(irc.IRCClient):
         args = parts[1:]
         
         # Execute command
-        success = self.module_manager.execute_command(
+        success = self.plugin_manager.execute_command(
             command, self, target, nickname, args
         )
         
