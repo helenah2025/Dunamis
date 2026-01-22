@@ -134,7 +134,6 @@ def command_chanpart(bot, target: str, nickname: str, args: List[str]):
     response_target = target if target != channel_name else nickname
     bot.send_message(response_target, f"Left channel: {channel_name}", nickname)
 
-
 def command_chancycle(bot, target: str, nickname: str, args: List[str]):
     """
     Cycle (part and rejoin) an IRC channel
@@ -165,9 +164,9 @@ def command_chancycle(bot, target: str, nickname: str, args: List[str]):
         bot.send_message(target, f"Invalid channel name: {channel_name}", nickname)
         return
     
-    # Part and rejoin without database updates
-    bot.part_channel(channel_name, save_to_db=False)
-    bot.join_channel(channel_name, save_to_db=False)
+    # Use low-level IRC commands to cycle immediately
+    bot.leave(channel_name)
+    bot.join(channel_name)
     
     # Send confirmation to a different target if we're cycling the current channel
     response_target = target if target != channel_name else nickname
