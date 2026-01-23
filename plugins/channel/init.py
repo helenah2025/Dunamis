@@ -212,13 +212,13 @@ def handle_info(bot, target: str, nickname: str, args: List[str]):
 
 
 def handle_autojoin(bot, target: str, nickname: str, args: List[str]):
-    pass
-
-
-def command_chansave(bot, target: str, nickname: str, args: List[str]):
     if args:
         channel_name = args[0]
+        autojoin = args[1].lower()
     else:
+        bot.send_message(target, "Usage: channel autojoin [channel] <true|false>", nickname)
+
+    if autojoin == "true":
         # Default to current target if in a channel
         if target.startswith('#'):
             channel_name = target
@@ -226,33 +226,29 @@ def command_chansave(bot, target: str, nickname: str, args: List[str]):
             bot.send_message(target, "Usage: chansave [channel]", nickname)
             return
 
-    if not channel_name.startswith('#'):
-        bot.send_message(
-            target,
-            f"Invalid channel name: {channel_name}",
-            nickname)
-        return
+        if not channel_name.startswith('#'):
+            bot.send_message(
+                target,
+                f"Invalid channel name: {channel_name}",
+                nickname)
+            return
 
-    # Check if already in database
-    channels_in_db = bot.db.get_channels(bot.factory.config.id)
+        # Check if already in database
+        channels_in_db = bot.db.get_channels(bot.factory.config.id)
 
-    if channel_name in channels_in_db:
-        bot.send_message(
-            target,
-            f"Channel {channel_name} already saved",
-            nickname)
-    else:
-        bot.db.add_channel(bot.factory.config.id, channel_name)
-        bot.send_message(
-            target,
-            f"Saved channel {channel_name} for auto-join",
-            nickname)
+        if channel_name in channels_in_db:
+            bot.send_message(
+                target,
+                f"Channel {channel_name} already saved",
+                nickname)
+        else:
+            bot.db.add_channel(bot.factory.config.id, channel_name)
+            bot.send_message(
+                target,
+                f"Added channel {channel_name} to auto-join list",
+                nickname)
 
-
-def command_chanunsave(bot, target: str, nickname: str, args: List[str]):
-    if args:
-        channel_name = args[0]
-    else:
+    if autojoin == "false":
         # Default to current target if in a channel
         if target.startswith('#'):
             channel_name = target
@@ -260,27 +256,27 @@ def command_chanunsave(bot, target: str, nickname: str, args: List[str]):
             bot.send_message(target, "Usage: chanunsave [channel]", nickname)
             return
 
-    if not channel_name.startswith('#'):
-        bot.send_message(
-            target,
-            f"Invalid channel name: {channel_name}",
-            nickname)
-        return
+        if not channel_name.startswith('#'):
+            bot.send_message(
+                target,
+                f"Invalid channel name: {channel_name}",
+                nickname)
+            return
 
-    # Check if in database
-    channels_in_db = bot.db.get_channels(bot.factory.config.id)
+        # Check if in database
+        channels_in_db = bot.db.get_channels(bot.factory.config.id)
 
-    if channel_name not in channels_in_db:
-        bot.send_message(
-            target,
-            f"Channel {channel_name} not in auto-join list",
-            nickname)
-    else:
-        bot.db.remove_channel(bot.factory.config.id, channel_name)
-        bot.send_message(
-            target,
-            f"Removed {channel_name} from auto-join list",
-            nickname)
+        if channel_name not in channels_in_db:
+            bot.send_message(
+                target,
+                f"Channel {channel_name} not in auto-join list",
+                nickname)
+        else:
+            bot.db.remove_channel(bot.factory.config.id, channel_name)
+            bot.send_message(
+                target,
+                f"Removed {channel_name} from auto-join list",
+                nickname)
 
 
 __all__ = [
@@ -291,6 +287,5 @@ __all__ = [
     'handle_cycle',
     'handle_list',
     'handle_info',
-    'command_chansave',
-    'command_chanunsave',
+    'handle_autojoin',
 ]
