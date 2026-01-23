@@ -32,8 +32,8 @@ class NetworkConfig:
     nicknames: List[str]
     ident: str
     realname: str
-    nickserv_username: str
-    nickserv_password: str
+    services_username: str
+    services_password: str
     oper_username: str
     oper_password: str
     command_trigger: str

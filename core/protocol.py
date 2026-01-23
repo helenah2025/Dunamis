@@ -63,11 +63,11 @@ class Protocol(irc.IRCClient):
     def signedOn(self):
         config = self.factory.config
 
-        # Identify with NickServ
-        Logger.info(f"Identifying with NickServ as {config.nickserv_username}")
+        # Identify with services
+        Logger.info(f"Identifying with services as {config.services_username}")
         self.msg(
             'NickServ',
-            f'IDENTIFY {config.nickserv_username} {config.nickserv_password}'
+            f'IDENTIFY {config.services_username} {config.services_password}'
         )
 
         # Join channels
@@ -200,6 +200,6 @@ class Protocol(irc.IRCClient):
     def noticed(self, user: str, channel: str, message: str):
         if user == "NickServ!services@services.":
             if "Password accepted" in message:
-                Logger.info("Successfully identified with NickServ")
+                Logger.info("Successfully identified with services")
             elif "isn't registered" in message:
-                Logger.error("Failed to identify with NickServ")
+                Logger.error("Failed to identify with services")

@@ -55,8 +55,8 @@ class DatabaseManager:
                 nicknames=row[5].split(', '),
                 ident=row[6],
                 realname=row[7],
-                nickserv_username=row[8],
-                nickserv_password=row[9],
+                services_username=row[8],
+                services_password=row[9],
                 oper_username=row[10],
                 oper_password=row[11],
                 command_trigger=row[12]
