@@ -49,30 +49,32 @@ def format_channel_list(channels: List[str]) -> str:
 
 
 def command_channel(bot, target: str, nickname: str, args: List[str]):
-    try:
-        opts, _ = getopt(
-            args, "j:p:c:l:i:a:", [
-                "format=", "preset=", "timezone="])
-    except GetoptError as e:
-        bot.send_message(target, f"Invalid option: {e}", nickname)
+    handlers = {
+        "join": handle_join,
+        "part": handle_part,
+        "cycle": handle_cycle,
+        "list": handle_list,
+        "info": handle_info,
+        "autojoin": handle_autojoin,
+    }
+
+    if not args:
+        subcommand_list = ", ".join(handlers.keys())
+        bot.send_message(target, f"Usage: requires a subcommand: {subcommand_list}", nickname)
         return
 
-    for opt, arg in opts:
-        if opt in ("-j", "--join"):
-            join_arg = arg
-        elif opt in ("-p", "--part"):
-            part_arg = arg
-        elif opt in ("-c", "--cycle"):
-            cycle_arg = arg
-        elif opt in ("-l", "--list"):
-            list_arg = arg
-        elif opt in ("-i", "--info"):
-            info_arg = arg
-        elif opt in ("-a", "--autojoin"):
-            autojoin_arg = arg
+    subcommand = args[0].lower()
+    subargs = args[1:]
+
+    handler = handlers.get(subcommand)
+
+    if handler:
+        handler(bot, target, nickname, subargs)
+    else:
+        bot.send_message(target, f"Error: unknown subcommand: {subcommand}", nickname)
 
 
-def command_chanjoin(bot, target: str, nickname: str, args: List[str]):
+def handle_join(bot, target: str, nickname: str, args: List[str]):
     if args:
         channel_name = args[0]
     else:
@@ -80,7 +82,7 @@ def command_chanjoin(bot, target: str, nickname: str, args: List[str]):
         if target.startswith('#'):
             channel_name = target
         else:
-            bot.send_message(target, "Usage: chanjoin [channel]", nickname)
+            bot.send_message(target, "Usage: channel join [channel]", nickname)
             return
 
     if not channel_name.startswith('#'):
@@ -95,7 +97,7 @@ def command_chanjoin(bot, target: str, nickname: str, args: List[str]):
     bot.join_channel(channel_name, save_to_db=True)
 
 
-def command_chanpart(bot, target: str, nickname: str, args: List[str]):
+def handle_part(bot, target: str, nickname: str, args: List[str]):
     if args:
         channel_name = args[0]
     else:
@@ -103,7 +105,7 @@ def command_chanpart(bot, target: str, nickname: str, args: List[str]):
         if target.startswith('#'):
             channel_name = target
         else:
-            bot.send_message(target, "Usage: chanpart [channel]", nickname)
+            bot.send_message(target, "Usage: channel part [channel]", nickname)
             return
 
     if not channel_name.startswith('#'):
@@ -118,7 +120,7 @@ def command_chanpart(bot, target: str, nickname: str, args: List[str]):
     bot.part_channel(channel_name, save_to_db=True)
 
 
-def command_chancycle(bot, target: str, nickname: str, args: List[str]):
+def handle_cycle(bot, target: str, nickname: str, args: List[str]):
     if args:
         channel_name = args[0]
     else:
@@ -126,7 +128,7 @@ def command_chancycle(bot, target: str, nickname: str, args: List[str]):
         if target.startswith('#'):
             channel_name = target
         else:
-            bot.send_message(target, "Usage: chancycle [channel]", nickname)
+            bot.send_message(target, "Usage: channel cycle [channel]", nickname)
             return
 
     if not channel_name.startswith('#'):
@@ -142,7 +144,7 @@ def command_chancycle(bot, target: str, nickname: str, args: List[str]):
     bot.join(channel_name)
 
 
-def command_chanlist(bot, target: str, nickname: str, args: List[str]):
+def handle_list(bot, target: str, nickname: str, args: List[str]):
     mode = args[0].lower() if args else "simple"
     channels = sorted(bot.joined_channels)
 
@@ -172,7 +174,7 @@ def command_chanlist(bot, target: str, nickname: str, args: List[str]):
         )
 
 
-def command_chaninfo(bot, target: str, nickname: str, args: List[str]):
+def handle_info(bot, target: str, nickname: str, args: List[str]):
     if args:
         channel_name = args[0]
     else:
@@ -180,7 +182,7 @@ def command_chaninfo(bot, target: str, nickname: str, args: List[str]):
         if target.startswith('#'):
             channel_name = target
         else:
-            bot.send_message(target, "Usage: chaninfo [channel]", nickname)
+            bot.send_message(target, "Usage: channel info [channel]", nickname)
             return
 
     if not channel_name.startswith('#'):
@@ -207,6 +209,10 @@ def command_chaninfo(bot, target: str, nickname: str, args: List[str]):
     )
 
     bot.send_message(target, info, nickname)
+
+
+def handle_autojoin(bot, target: str, nickname: str, args: List[str]):
+    pass
 
 
 def command_chansave(bot, target: str, nickname: str, args: List[str]):
@@ -279,11 +285,12 @@ def command_chanunsave(bot, target: str, nickname: str, args: List[str]):
 
 __all__ = [
     'PLUGIN_INFO',
-    'command_chanjoin',
-    'command_chanpart',
-    'command_chancycle',
-    'command_chanlist',
-    'command_chaninfo',
+    'command_channel',
+    'handle_join',
+    'handle_part',
+    'handle_cycle',
+    'handle_list',
+    'handle_info',
     'command_chansave',
     'command_chanunsave',
 ]
