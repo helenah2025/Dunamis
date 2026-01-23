@@ -98,18 +98,24 @@ def fetch_developer_excuse() -> str:
 
 
 def roll_dice(count: int, sides: int) -> Tuple[bool, str, List[int]]:
+    max_dice = 150
+    max_sides = 150
+
     # Validation
     if count <= 0:
         return False, "You appear to be rolling thin air.", []
 
-    if count > 100:
-        return False, "That's too many dice! Maximum is 100.", []
+    if count > max_dice:
+        return False, f"That's too many dice! Maximum is {max_dice}.", []
 
-    if sides < 2:
+    if sides == 0:
+        return False, "A zero sided die is not possible, however a two sided die is.", []
+
+    if sides == 1:
         return False, "A one sided die is not possible, however a two sided die is.", []
 
-    if sides > 1000:
-        return False, "That's too many sides! Maximum is 1000.", []
+    if sides > max_sides:
+        return False, f"That's too many sides! Maximum is {max_sides}.", []
 
     # Roll dice
     results = [randint(1, sides) for _ in range(count)]
