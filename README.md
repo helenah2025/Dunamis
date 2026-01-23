@@ -11,3 +11,12 @@ Originally developed as a pseudo-service for the DGS (Dead Gnome Society) IRC ne
 ## Getting Started
 
 Documentation is available in the [wiki](https://github.com/helenah2025/ServiceX/wiki). Please read the wiki before requesting support.
+
+## Contact & Support
+
+For support and questions:
+
+* **Email:** helenah2025@proton.me
+* **IRC:** #ServiceX on Libera
+
+For feature requests, bug reports, updates to the wiki, etc., please submit a [GitHub issue](https://github.com/helenah2025/ServiceX/issues).
