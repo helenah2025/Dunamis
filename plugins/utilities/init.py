@@ -145,22 +145,6 @@ def command_commands(bot, target: str, nickname: str, args: List[str]):
 
 
 def command_date(bot, target: str, nickname: str, args: List[str]):
-    """
-    Display current date/time with optional formatting
-
-    Usage: date [-t TIMEZONE] [-f FORMAT] [-p PRESET]
-
-    Options:
-        -t, --timezone  Timezone (e.g., 'US/Eastern')
-        -f, --format    Custom strftime format
-        -p, --preset    Preset format (date, time, datetime)
-
-    Examples:
-        date
-        date -p datetime
-        date -t US/Eastern
-        date -f "%Y-%m-%d %H:%M"
-    """
     from datetime import datetime
     from pytz import timezone as pytz_timezone
 
@@ -315,111 +299,101 @@ def command_nick(bot, target: str, nickname: str, args: List[str]):
 
 
 def command_plugin(bot, target: str, nickname: str, args: List[str]):
-    """
-    Manage bot plugins
+    handlers = {
+        "help": handle_plugin_help,
+        "list": handle_plugin_list,
+        "load": handle_plugin_load,
+        "unload": handle_plugin_unload,
+        "enable": handle_plugin_enable,
+        "disable": handle_plugin_disable,
+    }
 
-    Usage: plugin SUBCOMMAND [ARGS...]
-
-    Subcommands:
-        list              List loaded plugins
-        load PLUGIN       Load a plugin
-        unload PLUGIN     Unload a plugin
-        enable PLUGIN     Enable plugin in database
-        disable PLUGIN    Disable plugin in database
-        help              Show this help
-
-    Examples:
-        plugin list
-        plugin load admin
-        plugin unload utilities
-    """
     if not args:
-        bot.send_message(
-            target,
-            "Usage: plugin SUBCOMMAND [ARGS...]",
-            nickname)
+        subcommand_list = ", ".join(handlers.keys())
+        bot.send_message(target, f"Usage: requires a subcommand: {subcommand_list}", nickname)
         return
 
     subcommand = args[0].lower()
-    subcommand_args = args[1:]
+    subargs = args[1:]
 
-    if subcommand == "help":
-        help_text = (
-            "ServiceX Plugin Manager\n"
-            "Commands: list, load, unload, enable, disable, help"
-        )
-        bot.send_message(target, help_text, nickname)
+    handler = handlers.get(subcommand)
 
-    elif subcommand == "list":
-        plugins = sorted(bot.plugin_manager.loaded_plugins.keys())
-        if plugins:
-            plugin_list = ", ".join(plugins)
-            bot.send_message(
-                target,
-                f"Loaded plugins: {plugin_list}",
-                nickname)
-        else:
-            bot.send_message(target, "No plugins loaded", nickname)
-
-    elif subcommand == "load":
-        if not subcommand_args:
-            bot.send_message(target, "Specify plugin(s) to load", nickname)
-            return
-
-        for plugin_name in subcommand_args:
-            if bot.plugin_manager.load_plugin(plugin_name):
-                bot.send_message(
-                    target, f"Loaded plugin: {plugin_name}", nickname)
-            else:
-                bot.send_message(
-                    target, f"Failed to load: {plugin_name}", nickname)
-
-    elif subcommand == "unload":
-        if not subcommand_args:
-            bot.send_message(target, "Specify plugin(s) to unload", nickname)
-            return
-
-        for plugin_name in subcommand_args:
-            if bot.plugin_manager.unload_plugin(plugin_name):
-                bot.send_message(
-                    target, f"Unloaded plugin: {plugin_name}", nickname)
-            else:
-                bot.send_message(
-                    target, f"Failed to unload: {plugin_name}", nickname)
-
-    elif subcommand == "enable":
-        if not subcommand_args:
-            bot.send_message(target, "Specify plugin(s) to enable", nickname)
-            return
-
-        for plugin_name in subcommand_args:
-            bot.db.update_plugin_status(
-                bot.factory.config.id, plugin_name, enabled=True)
-            bot.send_message(
-                target,
-                f"Enabled plugin: {plugin_name}",
-                nickname)
-
-    elif subcommand == "disable":
-        if not subcommand_args:
-            bot.send_message(target, "Specify plugin(s) to disable", nickname)
-            return
-
-        for plugin_name in subcommand_args:
-            bot.db.update_plugin_status(
-                bot.factory.config.id, plugin_name, enabled=False)
-            bot.send_message(
-                target,
-                f"Disabled plugin: {plugin_name}",
-                nickname)
-
+    if handler:
+        handler(bot, target, nickname, subargs)
     else:
-        bot.send_message(target, f"Unknown subcommand: {subcommand}", nickname)
+        bot.send_message(target, f"Error: unknown subcommand: {subcommand}", nickname)
+
+def handle_plugin_help(bot, target: str, nickname: str, args: List[str]):
+    help_text = (
+        "ServiceX Plugin Manager\n"
+        "Commands: list, load, unload, enable, disable, help"
+    )
+    bot.send_message(target, help_text, nickname)
 
 
-# ============================================================================
-# Plugin Exports
-# ============================================================================
+def handle_plugin_list(bot, target: str, nickname: str, args: List[str]):
+    plugins = sorted(bot.plugin_manager.loaded_plugins.keys())
+    if plugins:
+        plugin_list = ", ".join(plugins)
+        bot.send_message(
+            target,
+            f"Loaded plugins: {plugin_list}",
+            nickname)
+    else:
+        bot.send_message(target, "No plugins loaded", nickname)
+
+def handle_plugin_load(bot, target: str, nickname: str, args: List[str]):
+    if not args:
+        bot.send_message(target, "Specify plugin(s) to load", nickname)
+        return
+
+    for plugin_name in args:
+        if bot.plugin_manager.load_plugin(plugin_name):
+            bot.send_message(
+                target, f"Loaded plugin: {plugin_name}", nickname)
+        else:
+            bot.send_message(
+                target, f"Failed to load: {plugin_name}", nickname)
+
+def handle_plugin_unload(bot, target: str, nickname: str, args: List[str]):
+    if not args:
+        bot.send_message(target, "Specify plugin(s) to unload", nickname)
+        return
+
+    for plugin_name in args:
+        if bot.plugin_manager.unload_plugin(plugin_name):
+            bot.send_message(
+                target, f"Unloaded plugin: {plugin_name}", nickname)
+        else:
+            bot.send_message(
+                target, f"Failed to unload: {plugin_name}", nickname)
+
+def handle_plugin_enable(bot, target: str, nickname: str, args: List[str]):
+    if not args:
+        bot.send_message(target, "Specify plugin(s) to enable", nickname)
+        return
+
+    for plugin_name in args:
+        bot.db.update_plugin_status(
+            bot.factory.config.id, plugin_name, enabled=True)
+        bot.send_message(
+            target,
+            f"Enabled plugin: {plugin_name}",
+            nickname)
+
+def handle_plugin_disable(bot, target: str, nickname: str, args: List[str]):
+    if not args:
+        bot.send_message(target, "Specify plugin(s) to disable", nickname)
+        return
+
+    for plugin_name in args:
+        bot.db.update_plugin_status(
+            bot.factory.config.id, plugin_name, enabled=False)
+        bot.send_message(
+            target,
+            f"Disabled plugin: {plugin_name}",
+            nickname)
+
 
 __all__ = [
     'PLUGIN_INFO',
@@ -435,4 +409,10 @@ __all__ = [
     'command_join',
     'command_part',
     'command_plugin',
+    'handle_plugin_help',
+    'handle_plugin_list',
+    'handle_plugin_load',
+    'handle_plugin_unload',
+    'handle_plugin_enable',
+    'handle_plugin_disable',
 ]
