@@ -42,7 +42,7 @@ class DatabaseManager:
             return False
 
     def get_networks(self) -> List[NetworkConfig]:
-        self.cursor.execute('SELECT * FROM ircNetworks')
+        self.cursor.execute('SELECT * FROM irc_networks')
         networks = []
 
         for row in self.cursor.fetchall():
@@ -84,11 +84,11 @@ class DatabaseManager:
             ssl_str = "yes" if use_ssl else "no"
 
             self.cursor.execute(
-                '''INSERT INTO ircNetworks
-                   (networkName, networkAddress, networkPort, networkSSL,
+                '''INSERT INTO irc_networks
+                   (name, address, port, ssl,
                     nicknames, ident, realname,
-                    servicesUsername, servicesPassword,
-                    operUsername, operPassword, commandTrigger)
+                    services_username, services_password,
+                    oper_username, oper_password, command_trigger)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                 (name, address, port, ssl_str, nicknames, ident, realname,
                  services_username, services_password, oper_username,
@@ -108,19 +108,19 @@ class DatabaseManager:
         try:
             # First, remove associated channels
             self.cursor.execute(
-                'DELETE FROM ircChannels WHERE networkID=?',
+                'DELETE FROM irc_channels WHERE network_id=?',
                 (network_id,)
             )
 
             # Remove associated plugins
             self.cursor.execute(
-                'DELETE FROM plugins WHERE networkID=?',
+                'DELETE FROM plugins WHERE network_id=?',
                 (network_id,)
             )
 
             # Remove the network
             self.cursor.execute(
-                'DELETE FROM ircNetworks WHERE ID=?',
+                'DELETE FROM irc_networks WHERE ID=?',
                 (network_id,)
             )
 
@@ -142,18 +142,18 @@ class DatabaseManager:
         try:
             # Map friendly names to database columns
             column_map = {
-                'name': 'networkName',
-                'address': 'networkAddress',
-                'port': 'networkPort',
-                'use_ssl': 'networkSSL',
+                'name': 'name',
+                'address': 'address',
+                'port': 'port',
+                'use_ssl': 'ssl',
                 'nicknames': 'nicknames',
                 'ident': 'ident',
                 'realname': 'realname',
-                'services_username': 'servicesUsername',
-                'services_password': 'servicesPassword',
-                'oper_username': 'operUsername',
-                'oper_password': 'operPassword',
-                'command_trigger': 'commandTrigger'
+                'services_username': 'services_username',
+                'services_password': 'services_password',
+                'oper_username': 'oper_username',
+                'oper_password': 'oper_password',
+                'command_trigger': 'command_trigger'
             }
 
             # Build UPDATE query
@@ -174,7 +174,7 @@ class DatabaseManager:
                 return False
 
             values.append(network_id)
-            query = f"UPDATE ircNetworks SET {', '.join(set_clauses)} WHERE ID=?"
+            query = f"UPDATE irc_networks SET {', '.join(set_clauses)} WHERE ID=?"
 
             self.cursor.execute(query, values)
             rows_affected = self.cursor.rowcount
@@ -193,14 +193,14 @@ class DatabaseManager:
 
     def get_channels(self, network_id: int) -> List[str]:
         self.cursor.execute(
-            'SELECT channelName FROM ircChannels WHERE networkID=?',
+            'SELECT name FROM irc_channels WHERE network_id=?',
             (network_id,)
         )
         return [row[0] for row in self.cursor.fetchall()]
 
     def get_enabled_plugins(self, network_id: int) -> List[str]:
         self.cursor.execute(
-            'SELECT pluginName FROM plugins WHERE networkID=? AND pluginEnabled=1',
+            'SELECT name FROM plugins WHERE network_id=? AND enabled=1',
             (network_id,)
         )
         return [row[0] for row in self.cursor.fetchall()]
@@ -208,7 +208,7 @@ class DatabaseManager:
     def add_channel(self, network_id: int, channel_name: str):
         try:
             self.cursor.execute(
-                'INSERT INTO ircChannels (networkID, channelName) VALUES (?, ?)',
+                'INSERT INTO irc_channels (network_id, name) VALUES (?, ?)',
                 (network_id, channel_name)
             )
             self.connection.commit()
@@ -218,7 +218,7 @@ class DatabaseManager:
 
     def remove_channel(self, network_id: int, channel_name: str):
         self.cursor.execute(
-            'DELETE FROM ircChannels WHERE channelName=? AND networkID=?',
+            'DELETE FROM irc_channels WHERE name=? AND network_id=?',
             (channel_name, network_id)
         )
         self.connection.commit()
@@ -231,7 +231,7 @@ class DatabaseManager:
             enabled: bool):
         # Enable or disable plugin
         self.cursor.execute(
-            'UPDATE plugins SET pluginEnabled=? WHERE networkID=? AND pluginName=?',
+            'UPDATE plugins SET enabled=? WHERE network_id=? AND name=?',
             (1 if enabled else 0, network_id, plugin_name)
         )
         self.connection.commit()
