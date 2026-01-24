@@ -1,5 +1,5 @@
 """
-Utilities Plugin for ServiceX
+Utilities Plugin for Dunamis
 Provides basic utility commands for IRC bot functionality
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
@@ -28,7 +28,7 @@ PLUGIN_INFO = {
     "name": "Utilities",
     "author": "Helenah, Helena Bolan",
     "version": "2.0",
-    "description": "Core utility commands for ServiceX bot"
+    "description": "Core utility commands for Dunamis bot"
 }
 
 
@@ -101,10 +101,10 @@ def value_network(bot) -> str:
 
 def command_help(bot, target: str, nickname: str, args: List[str]):
     help_text = (
-        f"Hello there, I am a ServiceX bot called {bot.nickname}. "
+        f"Hello there, I am a Dunamis bot called {bot.nickname}. "
         f"For a list of commands, send '{bot.factory.config.command_trigger}commands' "
         f"into a channel or 'commands' to me as a PM.\n"
-        f"For more information: https://github.com/helenah2025/ServiceX/wiki/User-Guide\n"
+        f"For more information: https://github.com/helenah2025/Dunamis/wiki/User-Guide\n"
         f"NOTICE: This project has been totally refactored, the wiki page above does not yet exist.")
     bot.send_message(target, help_text, nickname)
 
@@ -326,7 +326,7 @@ def command_plugin(bot, target: str, nickname: str, args: List[str]):
 
 def handle_plugin_help(bot, target: str, nickname: str, args: List[str]):
     help_text = (
-        "ServiceX Plugin Manager\n"
+        "Dunamis Plugin Manager\n"
         "Commands: list, load, unload, enable, disable, help"
     )
     bot.send_message(target, help_text, nickname)

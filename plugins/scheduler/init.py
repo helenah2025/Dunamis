@@ -1,5 +1,5 @@
 """
-Scheduler Plugin for ServiceX
+Scheduler Plugin for Dunamis
 Provides commands for testing and managing the task scheduler
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
@@ -148,7 +148,7 @@ def command_task(bot, target: str, nickname: str, args: List[str]):
                 if opt in ("-p", "--plugin"):
                     plugin_filter = arg
                 elif opt in ("-s", "--state"):
-                    from servicex import TaskState
+                    from dunamis import TaskState
                     try:
                         state_filter = TaskState[arg.upper()]
                     except KeyError:

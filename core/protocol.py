@@ -1,5 +1,5 @@
 """
-ServiceX IRC Bot - Protocol
+Dunamis IRC Bot - Protocol
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
 
@@ -29,7 +29,7 @@ from .database_manager import DatabaseManager
 
 
 class Protocol(irc.IRCClient):
-    versionName = "ServiceX"
+    versionName = "Dunamis"
     versionNum = "2.0"
     versionEnv = "Python/Twisted"
 

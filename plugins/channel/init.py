@@ -1,5 +1,5 @@
 """
-Channel Plugin for ServiceX
+Channel Plugin for Dunamis
 Provides IRC channel management commands
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>

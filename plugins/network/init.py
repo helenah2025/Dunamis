@@ -1,5 +1,5 @@
 """
-Network Plugin for ServiceX
+Network Plugin for Dunamis
 Provides IRC network management commands
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
@@ -246,9 +246,9 @@ def handle_add(bot, target: str, nickname: str, args: List[str]):
     address = None
     port = None
     enable_ssl = False
-    nicknames = "ServiceX"
-    ident = "servicex"
-    realname = "ServiceX IRC Bot"
+    nicknames = "Dunamis"
+    ident = "dunamis"
+    realname = "Dunamis IRC Bot"
     services_user = ""
     services_pass = ""
     oper_user = ""

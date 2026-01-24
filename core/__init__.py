@@ -1,5 +1,5 @@
 """
-ServiceX IRC Bot - Core Module
+Dunamis IRC Bot - Core Module
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
 

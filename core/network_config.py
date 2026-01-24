@@ -1,5 +1,5 @@
 """
-ServiceX IRC Bot - Network Configuration
+Dunamis IRC Bot - Network Configuration
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
 

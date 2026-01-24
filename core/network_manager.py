@@ -1,5 +1,5 @@
 """
-ServiceX IRC Bot - Network Manager
+Dunamis IRC Bot - Network Manager
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
 

@@ -1,5 +1,5 @@
 """
-ServiceX IRC Bot - Plugin Manager
+Dunamis IRC Bot - Plugin Manager
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
 

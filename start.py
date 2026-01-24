@@ -1,5 +1,5 @@
 """
-ServiceX IRC Bot
+Dunamis IRC Bot
 A modular IRC bot built on Twisted with plugin support
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
@@ -31,12 +31,12 @@ from core import (
 def main():
     # Initialize logging first
     Logger.setup()
-    Logger.info("ServiceX starting...")
+    Logger.info("Dunamis starting...")
 
     # Check database exists
-    db_path = Path("servicex.db")
+    db_path = Path("dunamis.db")
     if not db_path.exists():
-        Logger.error("Database not found. Run 'servicex-setup' first.")
+        Logger.error("Database not found. Run 'dunamis-setup' first.")
         return
 
     # Connect to database

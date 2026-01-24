@@ -1,5 +1,5 @@
 """
-ServiceX IRC Bot - Task Scheduler
+Dunamis IRC Bot - Task Scheduler
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
 

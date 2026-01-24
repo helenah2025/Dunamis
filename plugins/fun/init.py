@@ -1,5 +1,5 @@
 """
-Fun Plugin for ServiceX
+Fun Plugin for Dunamis
 Provides entertainment and novelty commands for IRC bot
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>

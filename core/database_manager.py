@@ -1,5 +1,5 @@
 """
-ServiceX IRC Bot - Database Manager
+Dunamis IRC Bot - Database Manager
 
 Copyright (C) 2026 Helenah, Helena Bolan <helenah2025@proton.me>
 
