@@ -337,7 +337,7 @@ def handle_plugin_list(bot, target: str, nickname: str, args: List[str]):
         plugin_list = ", ".join(plugins)
         bot.send_message(
             target,
-            f"Success: loaded plugins: {plugin_list}",
+            f"Info: loaded plugins: {plugin_list}",
             nickname)
     else:
         bot.send_message(target, "Info: no plugins loaded", nickname)
