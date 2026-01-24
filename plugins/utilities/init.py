@@ -104,8 +104,8 @@ def command_help(bot, target: str, nickname: str, args: List[str]):
         f"Hello there, I am a ServiceX bot called {bot.nickname}. "
         f"For a list of commands, send '{bot.factory.config.command_trigger}commands' "
         f"into a channel or 'commands' to me as a PM.\n"
-        f"For more information: https://github.com/DGS-Dead-Gnome-Society/ServiceX/wiki/User-Guide\n"
-        f"NOTICE: This project has been totally refactored, the repository above is no longer maintained.")
+        f"For more information: https://github.com/helenah2025/ServiceX/wiki/User-Guide\n"
+        f"NOTICE: This project has been totally refactored, the wiki page above does not yet exist.")
     bot.send_message(target, help_text, nickname)
 
 
@@ -308,8 +308,9 @@ def command_plugin(bot, target: str, nickname: str, args: List[str]):
         "disable": handle_plugin_disable,
     }
 
+    subcommand_list = ", ".join(handlers.keys())
+
     if not args:
-        subcommand_list = ", ".join(handlers.keys())
         bot.send_message(target, f"Usage: requires a subcommand: {subcommand_list}", nickname)
         return
 
@@ -321,7 +322,7 @@ def command_plugin(bot, target: str, nickname: str, args: List[str]):
     if handler:
         handler(bot, target, nickname, subargs)
     else:
-        bot.send_message(target, f"Error: unknown subcommand: {subcommand}", nickname)
+        bot.send_message(target, f"Error: unknown subcommand: {subcommand} - available subcommands: {subcommand_list}", nickname)
 
 def handle_plugin_help(bot, target: str, nickname: str, args: List[str]):
     help_text = (

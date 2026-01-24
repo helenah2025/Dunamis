@@ -84,7 +84,7 @@ class DatabaseManager:
             ssl_str = "yes" if use_ssl else "no"
 
             self.cursor.execute(
-                '''INSERT INTO ircNetworks 
+                '''INSERT INTO ircNetworks
                    (networkName, networkAddress, networkPort, networkSSL,
                     nicknames, ident, realname,
                     servicesUsername, servicesPassword,
@@ -120,7 +120,7 @@ class DatabaseManager:
 
             # Remove the network
             self.cursor.execute(
-                'DELETE FROM ircNetworks WHERE networkID=?',
+                'DELETE FROM ircNetworks WHERE ID=?',
                 (network_id,)
             )
 
@@ -174,7 +174,7 @@ class DatabaseManager:
                 return False
 
             values.append(network_id)
-            query = f"UPDATE ircNetworks SET {', '.join(set_clauses)} WHERE networkID=?"
+            query = f"UPDATE ircNetworks SET {', '.join(set_clauses)} WHERE ID=?"
 
             self.cursor.execute(query, values)
             rows_affected = self.cursor.rowcount

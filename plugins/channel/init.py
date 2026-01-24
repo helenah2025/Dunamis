@@ -58,8 +58,9 @@ def command_channel(bot, target: str, nickname: str, args: List[str]):
         "autojoin": handle_autojoin,
     }
 
+    subcommand_list = ", ".join(handlers.keys())
+
     if not args:
-        subcommand_list = ", ".join(handlers.keys())
         bot.send_message(target, f"Usage: requires a subcommand: {subcommand_list}", nickname)
         return
 
@@ -71,7 +72,7 @@ def command_channel(bot, target: str, nickname: str, args: List[str]):
     if handler:
         handler(bot, target, nickname, subargs)
     else:
-        bot.send_message(target, f"Error: unknown subcommand: {subcommand}", nickname)
+        bot.send_message(target, f"Error: unknown subcommand: {subcommand} - available subcommands: {subcommand_list}", nickname)
 
 
 def handle_join(bot, target: str, nickname: str, args: List[str]):
