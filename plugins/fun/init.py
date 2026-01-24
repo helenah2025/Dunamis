@@ -39,7 +39,8 @@ PLUGIN_INFO = {
 }
 
 
-DIGIT_ART: Dict[str, Tuple[str, ...]] = {
+# Block style
+DIGIT_ART_BLOCK: Dict[str, Tuple[str, ...]] = {
     '0': ('██████', '██  ██', '██  ██', '██  ██', '██████'),
     '1': ('    ██', '    ██', '    ██', '    ██', '    ██'),
     '2': ('██████', '    ██', '██████', '██    ', '██████'),
@@ -52,6 +53,32 @@ DIGIT_ART: Dict[str, Tuple[str, ...]] = {
     '9': ('██████', '██  ██', '██████', '    ██', '██████'),
     ':': ('      ', '  ██  ', '      ', '  ██  ', '      '),
 }
+
+
+# Braille style
+DIGIT_ART_BRAILLE: Dict[str, Tuple[str, ...]] = {
+    '0': ('⣾⠛⢻⡆', '⣿⠀⢸⡇', '⢿⣤⣼⠇'),
+    '1': ('⢸⡇', '⢸⡇', '⢸⡇'),
+    '2': ('⠙⠛⢻⡆', '⣴⠶⠾⠃', '⢿⣤⣤⡀'),
+    '3': ('⠙⠛⢻⡆', '⠰⠶⢾⡇', '⣠⣤⣼⠇'),
+    '4': ('⣿⠀⢸⡇', '⠻⠶⢾⡇', '⠀⠀⢸⡇'),
+    '5': ('⣾⠛⠛⠁', '⠻⠶⢶⡄', '⢠⣤⣼⠇'),
+    '6': ('⣾⠛⠛⠁', '⣿⠶⢶⡄', '⢿⣤⣼⠇'),
+    '7': ('⠙⠛⢻⡇', '⠀⠀⢸⡇', '⠀⠀⢸⡇'),
+    '8': ('⣾⠛⢻⡆', '⣿⠶⢾⡇', '⢿⣤⣼⠇'),
+    '9': ('⣾⠛⢻⡆', '⠻⠶⢾⡇', '⢠⣤⣼⠇'),
+    ':': ('⢀⡀', '⢈⡁', '⠈⠁'),
+}
+
+
+# Style registry
+DIGIT_STYLES = {
+    'block': DIGIT_ART_BLOCK,
+    'braille': DIGIT_ART_BRAILLE,
+}
+
+
+DEFAULT_STYLE = 'block'
 
 
 def render_ascii_text(
@@ -151,12 +178,37 @@ def command_why(bot, target: str, nickname: str, args: List[str]):
 
 
 def command_digits(bot, target: str, nickname: str, args: List[str]):
-    if not args:
-        bot.send_message(target, "Usage: digits NUMBER [NUMBER...]", nickname)
+    style = DEFAULT_STYLE
+    use_braille_blank = False
+
+    try:
+        opts, remaining_args = getopt(args, "s:b", ["style=", "braille-blank"])
+    except GetoptError as e:
+        bot.send_message(target, f"Invalid option: {e}", nickname)
+        return
+
+    for opt, arg in opts:
+        if opt in ("-s", "--style"):
+            if arg in DIGIT_STYLES:
+                style = arg
+            else:
+                available = ', '.join(DIGIT_STYLES.keys())
+                bot.send_message(
+                    target,
+                    f"Unknown style '{arg}'. Available: {available}",
+                    nickname
+                )
+                return
+
+        elif opt in ("-b", "--braille-blank"):
+            use_braille_blank = True
+
+    if not remaining_args:
+        bot.send_message(target, "Usage: digits [-s STYLE] [-b] NUMBER [NUMBER...]", nickname)
         return
 
     # Join all arguments and filter to digits only
-    text = ''.join(args)
+    text = ''.join(remaining_args)
     digits_only = ''.join(c for c in text if c.isdigit())
 
     if not digits_only:
@@ -168,16 +220,24 @@ def command_digits(bot, target: str, nickname: str, args: List[str]):
         return
 
     # Render and send ASCII art
-    lines = render_ascii_text(digits_only, DIGIT_ART)
+    char_map = DIGIT_STYLES[style]
+    lines = render_ascii_text(digits_only, char_map)
+
+    # Replace spaces with braille blank if requested
+    if use_braille_blank:
+        lines = [line.replace(' ', '\u2800') for line in lines]
+
     for line in lines:
         bot.send_message(target, line, nickname)
 
 
 def command_digiclock(bot, target: str, nickname: str, args: List[str]):
     timezone_arg = None
+    style = DEFAULT_STYLE
+    use_braille_blank = False
 
     try:
-        opts, _ = getopt(args, "t:", ["timezone="])
+        opts, _ = getopt(args, "t:s:b", ["timezone=", "style=", "braille-blank"])
     except GetoptError as e:
         bot.send_message(target, f"Invalid option: {e}", nickname)
         return
@@ -185,6 +245,20 @@ def command_digiclock(bot, target: str, nickname: str, args: List[str]):
     for opt, arg in opts:
         if opt in ("-t", "--timezone"):
             timezone_arg = arg
+        elif opt in ("-s", "--style"):
+            if arg in DIGIT_STYLES:
+                style = arg
+            else:
+                available = ', '.join(DIGIT_STYLES.keys())
+                bot.send_message(
+                    target,
+                    f"Unknown style '{arg}'. Available: {available}",
+                    nickname
+                )
+                return
+
+        elif opt in ("-b", "--braille-blank"):
+            use_braille_blank = True
 
     # Get current time
     try:
@@ -200,7 +274,13 @@ def command_digiclock(bot, target: str, nickname: str, args: List[str]):
         return
 
     # Render and send ASCII art
-    lines = render_ascii_text(time_str, DIGIT_ART)
+    char_map = DIGIT_STYLES[style]
+    lines = render_ascii_text(time_str, char_map)
+
+    # Replace spaces with braille blank if requested
+    if use_braille_blank:
+        lines = [line.replace(' ', '\u2800') for line in lines]
+
     for line in lines:
         bot.send_message(target, line, nickname)
 
